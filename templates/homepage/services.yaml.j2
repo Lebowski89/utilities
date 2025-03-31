@@ -183,7 +183,7 @@
           type: portainer
           url: http://{{ portainer_host }}:{{ portainer_ports_http_host }}
           env: 1
-          key: ptr_ntxHDH05iQk9RWxfd7gvhz5nRwnJ522jXiFDMvZVa1o=
+          key: {{ portainer_api }}
           fields: ["running", "stopped", "total"]
 
 - Metrics:
