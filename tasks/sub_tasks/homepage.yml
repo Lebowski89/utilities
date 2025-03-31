@@ -1,0 +1,67 @@
+---
+
+################################
+# DIRECTORY
+################################
+
+- name: Create config directory
+  ansible.builtin.file:
+    path: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}'
+    state: directory
+    mode: '0755'
+
+################################
+# CONFIG
+################################
+
+- name: Check if docker.yaml exists
+  ansible.builtin.stat:
+    path: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}/docker.yaml'
+  register: homepage_docker_yaml
+
+- name: Import docker.yaml file
+  when: not homepage_docker_yaml.stat.exists
+  ansible.builtin.template:
+    src: '{{ role_path }}/templates/homepage/docker.yaml.j2'
+    dest: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}/docker.yaml'
+    force: true
+    mode: '0664'
+
+- name: Check if services.yaml exists
+  ansible.builtin.stat:
+    path: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}/services.yaml'
+  register: homepage_services_yaml
+
+- name: Import services.yaml file
+  when: not homepage_services_yaml.stat.exists
+  ansible.builtin.template:
+    src: '{{ role_path }}/templates/homepage/services.yaml.j2'
+    dest: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}/services.yaml'
+    force: true
+    mode: '0664'
+
+- name: Check if settings.yaml exists
+  ansible.builtin.stat:
+    path: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}/settings.yaml'
+  register: homepage_settings_yaml
+
+- name: Import settings.yaml file
+  when: not homepage_settings_yaml.stat.exists
+  ansible.builtin.template:
+    src: '{{ role_path }}/templates/homepage/settings.yaml.j2'
+    dest: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}/settings.yaml'
+    force: true
+    mode: '0664'
+
+- name: Check if bookmarks.yaml exists
+  ansible.builtin.stat:
+    path: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}/bookmarks.yaml'
+  register: homepage_bookmarks_yaml
+
+- name: Import bookmarks.yaml file
+  when: not homepage_bookmarks_yaml.stat.exists
+  ansible.builtin.template:
+    src: '{{ role_path }}/templates/homepage/bookmarks.yaml.j2'
+    dest: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ homepage_defaults_name }}/bookmarks.yaml'
+    force: true
+    mode: '0664'

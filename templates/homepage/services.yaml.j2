@@ -1,0 +1,217 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+
+- arrs:
+    - Bazarr:
+        icon: bazarr.svg
+        href: http://{{ bazarr_host }}:{{ bazarr_ports_host }}
+        description: PVR (Subtitles)
+        widget:
+          type: bazarr
+          url: http://{{ bazarr_host }}:{{ bazarr_ports_host }}
+          key: {{ bazarr_api }}
+          fields: ["missingEpisodes", "missingMovies"]
+    - Lidarr:
+        icon: lidarr.svg
+        href: http://{{ lidarr_host }}:{{ lidarr_ports_host }}
+        description: PVR (Music)
+        widget:
+          type: lidarr
+          url: http://{{ lidarr_host }}:{{ lidarr_ports_host }}
+          key: {{ lidarr_api }}
+          fields: ["wanted", "queued", "artists"]
+    - Readarr:
+        icon: readarr.svg
+        href: http://{{ readarr_host }}:{{ readarr_ports_host }}
+        description: PVR (eBooks)
+        widget:
+          type: readarr
+          url: http://{{ readarr_host }}:{{ readarr_ports_host }}
+          key: {{ readarr_api }}
+          fields: ["wanted", "queued", "books"]
+    - Radarr:
+        icon: radarr.svg
+        href: http://{{ radarr_host }}:{{ radarr_ports_host }}
+        description: PVR (Movies)
+        widget:
+          type: radarr
+          url: http://{{ radarr_host }}:{{ radarr_ports_host }}
+          key: {{ radarr_api }}
+          fields: ["wanted", "missing", "queued", "movies"]
+          enableQueue: false
+    - Radarr-4K:
+        icon: radarr.svg
+        href: http://{{ radarr_4k_host }}:{{ radarr_4k_ports_host }}
+        description: PVR (4K-Movies)
+        widget:
+          type: radarr
+          url: http://{{ radarr_4k_host }}:{{ radarr_4k_ports_host }}
+          key: {{ radarr_4k_api }}
+          fields: ["wanted", "missing", "queued", "movies"]
+          enableQueue: false
+    - Sonarr:
+        icon: sonarr.svg
+        href: http://{{ sonarr_host }}:{{ sonarr_ports_host }}
+        description: PVR (TV)
+        widget:
+          type: sonarr
+          url: http://{{ sonarr_host }}:{{ sonarr_ports_host }}
+          key: {{ sonarr_api }}
+          fields: ["wanted", "queued", "series"]
+          enableQueue: false
+    - Sonarr-4K:
+        icon: sonarr.svg
+        href: http://{{ sonarr_4k_host }}:{{ sonarr_4k_ports_host }}
+        description: PVR (4K-TV)
+        widget:
+          type: sonarr
+          url: http://{{ sonarr_4k_host }}:{{ sonarr_4k_ports_host }}
+          key: {{ sonarr_4k_api }}
+          fields: ["wanted", "queued", "series"]
+          enableQueue: false
+    - Whisparr:
+        icon: whisparr.svg
+        href: http://{{ whisparr_host }}:{{ whisparr_ports_host }}
+        description: PVR (Adult)
+
+- Downloads:
+    - qBittorrent:
+        icon: qbittorrent.svg
+        href: https://{{ qbittorrent_name }}.{{ qbittorrent_host }}
+        description: Torrent download client
+        widget:
+          type: qbittorrent
+          url: https://{{ qbittorrent_name }}.{{ qbittorrent_host }}
+          username: {{ qbittorrent_username }}
+          password: {{ qbittorrent_password }}
+          fields: ["leech", "download", "seed", "upload"]
+          enableLeechProgress: true
+    - SABnzbd:
+        icon: sabnzbd.svg
+        href: https://{{ sabnzbd_name }}.{{ sabnzbd_ports_host }}
+        description: Usenet download client
+        widget:
+          type: sabnzbd
+          url: https://{{ sabnzbd_name }}.{{ sabnzbd_ports_host }}
+          key: {{ sabnzbd_api }}
+          fields: ["rate", "queue", "timeleft"]
+    - Prowlarr:
+        icon: prowlarr.svg
+        href: http://{{ prowlarr_host }}:{{ prowlarr_ports_host }}
+        description: The Middleman
+        widget:
+          type: prowlarr
+          url: http://{{ prowlarr_host }}:{{ prowlarr_ports_host }}
+          key: {{ prowlarr_api }}
+          fields: ["numberOfGrabs", "numberOfQueries", "numberOfFailGrabs", "numberOfFailQueries"]
+    - Autobrr:
+        icon: autobrr.svg
+        href: http://{{ autobrr_host }}:{{ autobrr_ports_host }}
+        description: Download automation tool for torrents
+        widget:
+          type: autobrr
+          url: http://{{ autobrr_host }}:{{ autobrr_ports_host }}
+          key: {{ autobrr_api }}
+          fields: ["approvedPushes", "rejectedPushes", "filters", "indexers"]
+
+- Media:
+    - Plex:
+        icon: plex.svg
+        href: http://{{ plex_host }}:{{ plex_ports_host }}
+        description: Plex Media Server
+        widget:
+          type: plex
+          url: http://{{ plex_host }}:{{ plex_ports_host }}
+          key: {{ plex_auth_token }}
+          fields: ["streams", "albums", "movies", "tv"]
+    - Tautulli:
+        icon: tautulli.svg
+        href: http://{{ tautulli_host }}:{{ tautulli_ports_host }}
+        description: Plex Monitoring
+        widget:
+          type: tautulli
+          url: http://{{ tautulli_host }}:{{ tautulli_ports_host }}
+          key: {{ tautulli_api }}
+          enableUser: true
+          showEpisodeNumber: true
+          expandOneStreamToTwoRows: true
+    - Stash:
+        icon: stash.svg
+        href: http://{{ stash_host }}:{{ stash_ports_host }}
+        description: Plex for P*rn
+        widget:
+          type: stash
+          url: http://{{ stash_host }}:{{ stash_ports_host }}
+          key: {{ stash_api }}
+          fields: ["scenes", "images"]
+
+- Requests:
+    - Jellyseerr:
+        icon: jellyseerr.svg
+        href: http://{{ jellyseerr_host }}:{{ jellyseerr_ports_host }}
+        description: Content Requests for Plex/Emby/Jellyfin
+        widget:
+          type: jellyseerr
+          url: http://{{ jellyseerr_host }}:{{ jellyseerr_ports_host }}
+          key: {{ jellyseerr_api }}
+          fields: ["pending", "approved", "available"]
+    - Ombi:
+        icon: ombi.svg
+        href: http://{{ ombi_host }}:{{ ombi_ports_host }}
+        description: Content Requests for Plex/Emby
+        widget:
+          type: ombi
+          url: http://{{ ombi_host }}:{{ ombi_ports_host }}
+          key: {{ ombi_api }}
+          fields: ["pending", "approved", "available"]
+
+- Utilities:
+    - Traefik:
+        icon: traefik-proxy.svg
+        href: http://{{ traefik_host }}:{{ traefik_ports_webui_host }}
+        description: Traefik Reverse Proxy
+        widget:
+          type: traefik
+          url: http://{{ traefik_host }}:{{ traefik_ports_webui_host }}
+          fields: ["routers", "services", "middleware"]
+    - Portainer:
+        icon: portainer.svg
+        href: http://{{ portainer_host }}:{{ portainer_ports_http_host }}
+        description: Docker Manager
+        widget:
+          type: portainer
+          url: http://{{ portainer_host }}:{{ portainer_ports_http_host }}
+          env: 1
+          key: ptr_ntxHDH05iQk9RWxfd7gvhz5nRwnJ522jXiFDMvZVa1o=
+          fields: ["running", "stopped", "total"]
+
+- Metrics:
+    - Grafana:
+        icon: grafana.svg
+        href: http://{{ grafana_host }}:{{ grafana_ports_host }}
+        description: Data visualization platform
+        widget:
+          type: grafana
+          url: http://{{ grafana_host }}:{{ grafana_ports_host }}
+          username: {{ grafana_user }}
+          password: {{ grafana_password }}
+          fields: ["dashboards", "datasources", "totalalerts", "alertstriggered"]
+    - Prometheus:
+        icon: prometheus.svg
+        href: http://{{ prometheus_host }}:{{ prometheus_ports_host }}
+        description: Metrics monitoring system
+        widget:
+          type: prometheus
+          url: http://{{ prometheus_host }}:{{ prometheus_ports_host }}
+          fields: ["targets_up", "targets_down", "targets_total"]
+
+- IRC:
+    - TheLounge:
+        icon: thelounge.svg
+        href: http://{{ thelounge_host }}:{{ thelounge_ports_host }}
+        description: IRC Client
+    - ZNC:
+        icon: znc.png
+        href: http://{{ znc_host }}:{{ znc_ports_web_host }}
+        description: IRC Bouncer

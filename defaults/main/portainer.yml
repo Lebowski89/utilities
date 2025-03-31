@@ -1,0 +1,83 @@
+---
+
+################################
+# BASICS
+################################
+
+portainer_defaults_name: 'portainer'
+portainer_defaults_image_repo: 'portainer/portainer-ce'
+portainer_defaults_image_tag: 'latest'
+
+portainer_agent_defaults_name: 'agent'
+portainer_agent_defaults_image_repo: 'portainer/agent'
+portainer_agent_defaults_image_tag: 'latest'
+
+################################
+# PORTS
+################################
+
+portainer_defaults_ports_http_host: '9000'
+portainer_defaults_ports_http_cont: '9000'
+portainer_defaults_ports_tcp_tunnel_host: '8000'
+portainer_defaults_ports_tcp_tunnel_cont: '8000'
+portainer_defaults_ports_webui_host: '9443'
+portainer_defaults_ports_webui_cont: '9443'
+
+portainer_agent_defaults_ports_host: '9001'
+portainer_agent_defaults_ports_cont: '9001'
+
+################################
+# PATHS
+################################
+
+portainer_defaults_location: '/opt/{{ portainer_defaults_name }}'
+
+################################
+# LABELS
+################################
+
+portainer_defaults_labels: '{{ portainer_defaults_traefik_core
+                               | combine(portainer_defaults_traefik_router)
+                               | combine(portainer_defaults_traefik_router_secure) }}'
+                               
+################################
+# TRAEFIK
+################################
+
+portainer_defaults_traefik_core:
+  traefik.enable: 'true'
+  traefik.docker.network: '{{ network_overlay }}'
+
+portainer_defaults_traefik_router:
+  ## http
+  traefik.http.routers.portainer.entrypoints: '{{ traefik_http_entrypoint }}'
+  traefik.http.routers.portainer.rule: 'Host(`{{ portainer_defaults_name }}.{{ local_domain }}`)'
+  traefik.http.routers.portainer.middlewares: '{{ traefik_http_middlewares }}'
+  traefik.http.routers.portainer.priority: '{{ traefik_web_priority }}'
+  traefik.http.routers.portainer.service: 'portainer-svc'
+  traefik.http.services.portainer-svc.loadbalancer.server.port: '{{ portainer_defaults_ports_http_cont }}'
+  ## http-api
+  traefik.http.routers.portainer-api.entrypoints: '{{ traefik_http_entrypoint }}'
+  traefik.http.routers.portainer-api.rule: '{{ "Host(`" + portainer_defaults_name + "." + local_domain + "`) && (PathPrefix(`/api/websocket/`))" }}'
+  traefik.http.routers.portainer-api.middlewares: '{{ traefik_http_middlewares }}'
+  traefik.http.routers.portainer-api.priority: '{{ traefik_api_priority }}'
+  traefik.http.routers.portainer-api.service: 'portainer-svc'
+
+portainer_defaults_traefik_router_secure:
+  ## https
+  traefik.http.routers.portainer-secure.entrypoints: '{{ traefik_https_entrypoint }}'
+  traefik.http.routers.portainer-secure.rule: 'Host(`{{ portainer_defaults_name }}.{{ local_domain }}`)'
+  traefik.http.routers.portainer-secure.middlewares: '{{ traefik_https_middlewares }}'
+  traefik.http.routers.portainer-secure.priority: '{{ traefik_web_priority }}'
+  traefik.http.routers.portainer-secure.service: 'portainer-secure-svc'
+  traefik.http.routers.portainer-secure.tls.certresolver: '{{ traefik_tls_certresolver }}'
+  traefik.http.routers.portainer-secure.tls.options: '{{ traefik_tls_options }}'
+  traefik.http.services.portainer-secure-svc.loadbalancer.server.port: '{{ portainer_defaults_ports_http_cont }}'
+  ## https-api
+  traefik.http.routers.portainer-api-secure.entrypoints: '{{ traefik_https_entrypoint }}'
+  traefik.http.routers.portainer-api-secure.rule: '{{ "Host(`" + portainer_defaults_name + "." + local_domain + "`) && (PathPrefix(`/api/websocket/`))" }}'
+  traefik.http.routers.portainer-api-secure.middlewares: '{{ traefik_https_middlewares }}'
+  traefik.http.routers.portainer-api-secure.priority: '{{ traefik_api_priority }}'
+  traefik.http.routers.portainer-api-secure.service: 'portainer-secure-svc'
+  traefik.http.routers.portainer-api-secure.tls.certresolver: '{{ traefik_tls_certresolver }}'
+  traefik.http.routers.portainer-api-secure.tls.options: '{{ traefik_tls_options }}'

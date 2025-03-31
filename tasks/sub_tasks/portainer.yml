@@ -1,0 +1,58 @@
+---
+
+################################
+# DIRECTORY
+################################
+
+- name: Create appdata directory
+  ansible.builtin.file:
+    path: '{{ portainer_defaults_location }}'
+    state: directory
+    owner: '{{ puid }}'
+    group: '{{ pgid }}'
+    mode: '0755'
+
+################################
+# CLOUDFLARE
+################################
+
+- name: Perform Cloudflare DNS tasks
+  block:
+    - name: Remove existing CNAME DNS record
+      community.general.cloudflare_dns:
+        api_token: '{{ cloudflare_api }}'
+        zone: '{{ local_domain }}'
+        state: absent
+        type: CNAME
+        record: '{{ portainer_defaults_name }}'
+
+    - name: Remove existing A DNS record
+      community.general.cloudflare_dns:
+        api_token: '{{ cloudflare_api }}'
+        zone: '{{ local_domain }}'
+        state: absent
+        type: A
+        record: '{{ portainer_defaults_name }}'
+
+    - name: Add DNS record
+      community.general.cloudflare_dns:
+        api_token: '{{ cloudflare_api }}'
+        zone: '{{ local_domain }}'
+        state: present
+        solo: true
+        proxied: '{{ cloudflare_proxy }}'
+        type: '{{ cloudflare_record }}'
+        value: '{{ ipify_public_ip }}'
+        record: '{{ portainer_defaults_name }}'
+      register: portainer_cloudflare_record_creation_status
+
+    - name: Tasks on success
+      when: portainer_cloudflare_record_creation_status is succeeded
+      block:
+        - name: Set 'dns_record_print' variable
+          ansible.builtin.set_fact:
+            portainer_cloudflare_record_print: '{{ (portainer_defaults_name == local_domain) | ternary(local_domain, portainer_defaults_name + "." + local_domain) }}'
+
+        - name: Display DNS record creation status
+          ansible.builtin.debug:
+            msg: 'DNS A Record for "{{ portainer_cloudflare_record_print }}" set to "{{ ipify_public_ip }}" was added. Proxy: {{ cloudflare_proxy }}'

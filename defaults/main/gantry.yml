@@ -1,0 +1,9 @@
+---
+
+################################
+# BASICS
+################################
+
+gantry_defaults_name: 'gantry'
+gantry_defaults_image_repo: 'shizunge/gantry'
+gantry_defaults_image_tag: 'latest'

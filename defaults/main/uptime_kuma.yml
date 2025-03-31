@@ -1,0 +1,72 @@
+---
+
+################################
+# BASICS
+################################
+
+uptime_kuma_defaults_name: 'uptime-kuma'
+uptime_kuma_defaults_image_repo: 'louislam/uptime-kuma'
+uptime_kuma_defaults_image_tag: 'latest'
+
+################################
+# PORTS
+################################
+
+uptime_kuma_defaults_ports_host: '3001'
+uptime_kuma_defaults_ports_cont: '3001'
+
+################################
+# PATHS
+################################
+
+uptime_kuma_defaults_location: '/opt/{{ uptime_kuma_defaults_name }}'
+
+################################
+# LABELS
+################################
+
+uptime_kuma_defaults_labels: '{{ uptime_kuma_defaults_traefik_core
+                                 | combine(uptime_kuma_defaults_traefik_router)
+                                 | combine(uptime_kuma_defaults_traefik_router_secure) }}'
+
+################################
+# TRAEFIK
+################################
+
+uptime_kuma_defaults_traefik_core:
+  traefik.enable: 'true'
+  traefik.docker.network: '{{ network_overlay }}'
+
+uptime_kuma_defaults_traefik_router:
+  ## http
+  traefik.http.routers.uptime-kuma.entrypoints: '{{ traefik_http_entrypoint }}'
+  traefik.http.routers.uptime-kuma.rule: 'Host(`{{ uptime_kuma_defaults_name }}.{{ local_domain }}`)'
+  traefik.http.routers.uptime-kuma.middlewares: '{{ traefik_http_sso_middlewares }}'
+  traefik.http.routers.uptime-kuma.priority: '{{ traefik_web_priority }}'
+  traefik.http.routers.uptime-kuma.service: 'uptime-kuma-svc'
+  traefik.http.services.uptime-kuma-svc.loadbalancer.server.port: '{{ uptime_kuma_defaults_ports_cont }}'
+  ## http-api
+  traefik.http.routers.uptime-kuma-api.entrypoints: '{{ traefik_http_entrypoint }}'
+  traefik.http.routers.uptime-kuma-api.rule: '{{ "Host(`" + uptime_kuma_defaults_name + "." + local_domain + "`) && (PathPrefix(`/icon.svg`) || PathPrefix(`/api`) || PathPrefix(`/assets`) || PathPrefix(`/status`) || PathPrefix(`/metrics`) || PathRegexp(`^/$$`) || PathRegexp(`/upload/.*`))" }}'
+  traefik.http.routers.uptime-kuma-api.middlewares: '{{ traefik_http_middlewares }}'
+  traefik.http.routers.uptime-kuma-api.priority: '{{ traefik_api_priority }}'
+  traefik.http.routers.uptime-kuma-api.service: 'uptime-kuma-svc'
+
+uptime_kuma_defaults_traefik_router_secure:
+  ## https
+  traefik.http.routers.uptime-kuma-secure.entrypoints: '{{ traefik_https_entrypoint }}'
+  traefik.http.routers.uptime-kuma-secure.rule: 'Host(`{{ uptime_kuma_defaults_name }}.{{ local_domain }}`)'
+  traefik.http.routers.uptime-kuma-secure.middlewares: '{{ traefik_https_sso_middlewares }}'
+  traefik.http.routers.uptime-kuma-secure.priority: '{{ traefik_web_priority }}'
+  traefik.http.routers.uptime-kuma-secure.service: 'uptime-kuma-secure-svc'
+  traefik.http.routers.uptime-kuma-secure.tls.certresolver: '{{ traefik_tls_certresolver }}'
+  traefik.http.routers.uptime-kuma-secure.tls.options: '{{ traefik_tls_options }}'
+  traefik.http.services.uptime-kuma-secure-svc.loadbalancer.server.port: '{{ uptime_kuma_defaults_ports_cont }}'
+  ## https-api
+  traefik.http.routers.uptime-kuma-api-secure.entrypoints: '{{ traefik_https_entrypoint }}'
+  traefik.http.routers.uptime-kuma-api-secure.rule: '{{ "Host(`" + uptime_kuma_defaults_name + "." + local_domain + "`) && (PathPrefix(`/icon.svg`) || PathPrefix(`/api`) || PathPrefix(`/assets`) || PathPrefix(`/status`) || PathPrefix(`/metrics`) || PathRegexp(`^/$$`) || PathRegexp(`/upload/.*`))" }}'
+  traefik.http.routers.uptime-kuma-api-secure.middlewares: '{{ traefik_https_middlewares }}'
+  traefik.http.routers.uptime-kuma-api-secure.priority: '{{ traefik_api_priority }}'
+  traefik.http.routers.uptime-kuma-api-secure.service: 'uptime-kuma-secure-svc'
+  traefik.http.routers.uptime-kuma-api-secure.tls.certresolver: '{{ traefik_tls_certresolver }}'
+  traefik.http.routers.uptime-kuma-api-secure.tls.options: '{{ traefik_tls_options }}'

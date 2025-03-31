@@ -1,0 +1,50 @@
+---
+
+################################
+# CLEAN UP
+################################
+
+- name: Remove utilities stack
+  community.docker.docker_stack:
+    name: utilities
+    state: absent
+
+################################
+# SUB-TASKS
+################################
+
+- name: Create theme-park directory
+  ansible.builtin.file:
+    path: '{{ autofs_local_path }}/{{ autofs_mount_0_local_dir }}/{{ themepark_defaults_name }}'
+    state: directory
+    mode: '0755'
+
+- name: Include sub-tasks tasks
+  ansible.builtin.include_tasks: sub_tasks/{{ item }}.yml
+  loop:
+    - 'portainer'
+    - 'uptime_kuma'
+    - 'homepage'
+
+################################
+# DEPLOY
+################################
+
+- name: Import utilities-stack file
+  ansible.builtin.template:
+    src: '{{ role_path }}/templates/utilities-stack.yml.j2'
+    dest: /opt/utilities-stack.yml
+    force: true
+    mode: '0664'
+
+- name: Deploy utilities stack
+  community.docker.docker_stack:
+    state: present
+    name: utilities
+    compose:
+      - /opt/utilities-stack.yml
+
+- name: Remove utilities-stack file
+  ansible.builtin.file:
+    path: /opt/utilities-stack.yml
+    state: absent

@@ -1,0 +1,16 @@
+---
+
+################################
+# BASICS
+################################
+
+themepark_defaults_name: '{{ themepark_name }}'
+themepark_defaults_image_repo: 'ghcr.io/themepark-dev/theme.park'
+themepark_defaults_image_tag: 'latest'
+
+################################
+# PORTS
+################################
+
+themepark_defaults_ports_host: '{{ themepark_ports_host }}'
+themepark_defaults_ports_cont: '{{ themepark_ports_cont }}'

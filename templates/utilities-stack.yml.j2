@@ -1,0 +1,203 @@
+version: '3.9'
+
+services:
+  {{ portainer_agent_defaults_name }}:
+    image: {{ portainer_agent_defaults_image_repo }}:{{ portainer_agent_defaults_image_tag }}
+    networks:
+      - {{ network_overlay }}
+    ports:
+      - target: {{ portainer_agent_defaults_ports_cont }}
+        published: {{ portainer_agent_defaults_ports_host }}
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - type: bind
+        source: /var/lib/docker/volumes
+        target: /var/lib/docker/volumes
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    deploy:
+      mode: global
+
+  {{ portainer_defaults_name }}:
+    container_name: {{ portainer_defaults_name }}
+    image: {{ portainer_defaults_image_repo }}:{{ portainer_defaults_image_tag }}
+    hostname: {{ portainer_defaults_name }}
+    networks:
+      - {{ network_overlay }}
+    command: -H tcp://tasks.{{ portainer_agent_defaults_name }}:{{ portainer_agent_defaults_ports_cont }} --tlsskipverify
+    environment:
+      PUID: '{{ puid }}'
+      PGID: '{{ pgid }}'
+      TZ: '{{ timezone }}'
+    ports:
+      - target: {{ portainer_defaults_ports_http_cont }}
+        published: {{ portainer_defaults_ports_http_host }}
+        protocol: tcp
+        mode: ingress
+      - target: {{ portainer_defaults_ports_tcp_tunnel_cont }}
+        published: {{ portainer_defaults_ports_tcp_tunnel_host }}
+        protocol: tcp
+        mode: ingress
+      - target: {{ portainer_defaults_ports_webui_cont }}
+        published: {{ portainer_defaults_ports_webui_host }}
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - type: bind
+        source: {{ portainer_defaults_location }}
+        target: /data
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.labels.ansible_host == pvr]
+      labels: {{ portainer_defaults_labels }}
+
+  {{ gantry_defaults_name }}:
+    container_name: {{ gantry_defaults_name }}
+    image: {{ gantry_defaults_image_repo }}:{{ gantry_defaults_image_tag }}
+    networks:
+      - {{ network_overlay }}
+    environment:
+      TZ: '{{ timezone }}'
+      GANTRY_SERVICES_EXCLUDED_FILTERS: 'label=gantry.services.excluded=true'
+      GANTRY_PRE_RUN_CMD: 'SERVICE_NAME=gantry-prune;
+                           docker service remove $${SERVICE_NAME} 2>/dev/null;
+                           docker service create --mode global-job --name $${SERVICE_NAME}
+                              --mount type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock
+                              --entrypoint docker
+                              alpinelinux/docker-cli
+                              system prune -f;
+                            docker service logs $${SERVICE_NAME};
+                            docker service remove $${SERVICE_NAME};
+                            SERVICE_NAME=gantry-container;
+                            docker service remove $${SERVICE_NAME} 2>/dev/null;
+                            docker service create --mode global-job --name $${SERVICE_NAME}
+                              --mount type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock
+                              ghcr.io/containrrr/watchtower
+                              --cleanup=true
+                              --label-enable
+                              --run-once=true
+                              --stop-timeout=60s
+                              --tlsverify=true;
+                            docker service logs $${SERVICE_NAME};
+                            docker service remove $${SERVICE_NAME};'
+      GANTRY_POST_RUN_CMD: 'echo \"This is a post run command.\";'
+      GANTRY_SLEEP_SECONDS: '0'
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    deploy:
+      mode: replicated
+      replicas: 0
+      placement:
+        constraints: [node.labels.ansible_host == pvr]
+      labels:
+        swarm.cronjob.enable: 'true'
+        swarm.cronjob.schedule: '45 23 0 * * *'
+        swarm.cronjob.skip-running: 'true'
+      restart_policy:
+        condition: none
+
+  cronjob:
+    container_name: cronjob
+    image: crazymax/swarm-cronjob:latest
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.labels.ansible_host == pvr]
+
+  {{ uptime_kuma_defaults_name }}:
+    container_name: {{ uptime_kuma_defaults_name }}
+    image: {{ uptime_kuma_defaults_image_repo }}:{{ uptime_kuma_defaults_image_tag }}
+    hostname: {{ uptime_kuma_defaults_name }}    
+    networks:
+      - {{ network_overlay }}
+    environment:
+      PUID: '{{ puid }}'
+      PGID: '{{ pgid }}'
+      TZ: '{{ timezone }}'
+    ports:
+      - target: {{ uptime_kuma_defaults_ports_cont }}
+        published: {{ uptime_kuma_defaults_ports_host }}
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - type: bind
+        source: {{ uptime_kuma_defaults_location }}
+        target: /app/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.labels.ansible_host == pvr]
+      labels: {{ uptime_kuma_defaults_labels }}
+
+  {{ themepark_defaults_name }}:
+    image: {{ themepark_defaults_image_repo }}:{{ themepark_defaults_image_tag }}
+    networks:
+      - {{ network_overlay }}
+    environment:
+      PUID: '{{ puid }}'
+      PGID: '{{ pgid }}'
+      TZ: '{{ timezone }}'
+    ports:
+      - target: {{ themepark_defaults_ports_cont }}
+        published: {{ themepark_defaults_ports_host }}
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - type: volume
+        source: {{ appdata_volume }}
+        target: /config
+        volume:
+          subpath: {{ themepark_defaults_name }}
+    deploy:
+      mode: global
+
+  {{ homepage_defaults_name }}:
+    container_name: {{ homepage_defaults_name }}
+    image: {{ homepage_defaults_image_repo }}:{{ homepage_defaults_image_tag }}
+    hostname: {{ homepage_defaults_name }}
+    networks:
+      - {{ network_overlay }}
+    environment:
+      PUID: '99'
+      PGID: '100'
+      TZ: '{{ timezone }}'
+      HOMEPAGE_ALLOWED_HOSTS: '{{ pvr_machine }}:{{ homepage_defaults_ports_host }}'
+    ports:
+      - target: {{ homepage_defaults_ports_cont }}
+        published: {{ homepage_defaults_ports_host }}
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - type: volume
+        source: {{ appdata_volume }}
+        target: /app/config
+        volume:
+          subpath: {{ homepage_defaults_name }}
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.labels.ansible_host == pvr]
+
+networks:
+  {{ network_overlay }}:
+    external: true
+
+volumes:
+  {{ appdata_volume }}:
+    external: true

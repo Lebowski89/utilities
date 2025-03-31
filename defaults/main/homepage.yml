@@ -1,0 +1,16 @@
+---
+
+################################
+# BASICS
+################################
+
+homepage_defaults_name: 'homepage'
+homepage_defaults_image_repo: 'ghcr.io/gethomepage/homepage'
+homepage_defaults_image_tag: 'latest'
+
+################################
+# PORTS
+################################
+
+homepage_defaults_ports_host: '3075'
+homepage_defaults_ports_cont: '3000'
